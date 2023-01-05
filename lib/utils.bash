@@ -19,6 +19,27 @@ if [ -n "${GITHUB_API_TOKEN:-}" ]; then
   curl_opts=("${curl_opts[@]}" -H "Authorization: token $GITHUB_API_TOKEN")
 fi
 
+get_arch() {
+  local ARCH
+  ARCH=$(uname -m)
+
+  case $ARCH in
+  armv*) ARCH="arm" ;;
+  aarch64) ARCH="arm64" ;;
+  x86) ARCH="386" ;;
+  x86_64) ARCH="amd64" ;;
+  i686) ARCH="386" ;;
+  i386) ARCH="386" ;;
+  esac
+  echo "${ARCH}"
+}
+
+get_platform() {
+  local platform
+  [ "Linux" = "$(uname)" ] && platform="linux" || platform="darwin"
+  echo "${platform}"
+}
+
 sort_versions() {
   sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' |
     LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
@@ -37,12 +58,14 @@ list_all_versions() {
 }
 
 download_release() {
-  local version filename url
+  local version filename url platform arch
   version="$1"
   filename="$2"
 
   # TODO: Adapt the release URL convention for appclacks
-  url="$GH_REPO/archive/v${version}.tar.gz"
+  url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${platform}_${arch}.tar.gz"
+
+  # https://github.com/appclacks/cli/releases/download/v0.5.0/appclacks_0.5.0_darwin_amd64.tar.gz
 
   echo "* Downloading $TOOL_NAME release $version..."
   curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
