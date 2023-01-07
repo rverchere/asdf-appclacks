@@ -62,8 +62,11 @@ download_release() {
   version="$1"
   filename="$2"
 
+  platform=$(get_platform)
+  arch=$(get_arch)
+
   # TODO: Adapt the release URL convention for appclacks
-  url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${platform}_${arch}.tar.gz"
+  url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${version}_${platform}_${arch}.tar.gz"
 
   # https://github.com/appclacks/cli/releases/download/v0.5.0/appclacks_0.5.0_darwin_amd64.tar.gz
 
